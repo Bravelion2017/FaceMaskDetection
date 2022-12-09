@@ -37,6 +37,8 @@ annotations_path ='/home/ubuntu/finalproject'+ "/annotations"
 
 # Set the preprocess_input of the pretrained model
 preprocess_input = tf.keras.applications.xception.preprocess_input  #xception.preprocess_input
+preprocess_input2 = tf.keras.applications.resnet50.preprocess_input  #resnet50.preprocess_input
+preprocess_input3 = tf.keras.applications.vgg16.preprocess_input #vgg16.preprocess_input
 
 
 def get_key(value, dictionary):
@@ -110,12 +112,42 @@ def parse_annotation(path):
 #====================================Data Generation================================================
 
 # Image size
-img_size = (img_size, img_size) #(35, 35)
+img_size = (299, 299)
+img_size2 = (224, 224)
 input_shape = (img_size, img_size, channel)
+
+dataset = [parse_annotation(anno) for anno in glob.glob(annotations_path + '/*.xml')]
+full_dataset = sum(dataset, [])
+df = pd.DataFrame(full_dataset)
+df.rename(columns = {'file':'file_name', 'name':'label'}, inplace = True)
+df['file_name'] = [input_data_path + '/' + i + '.png' for i in df['file_name']]
+original_df= df.copy(deep=True)
+df['label'] = df['label'].map(lambda x: 'with_mask' if x=='mask_weared_incorrect' else x )
+
+# Get labels
+labels = df["label"].unique()
+
+
+# Get train test split
+# 20% Test | 80%* Train(20% Validation)
+train_df, test_df = train_test_split(df, train_size=0.8, stratify=df['label'])
+train_df, valid_df = train_test_split(train_df,train_size=0.8, stratify=train_df['label'])
 
 # Making data in Tensorflow
 
 test_gen = ImageDataGenerator(rescale=1.0 / 255, preprocessing_function=preprocess_input)
+test_gen2 = ImageDataGenerator(rescale=1.0 / 255, preprocessing_function=preprocess_input2)
+test_gen3 = ImageDataGenerator(rescale=1.0 / 255, preprocessing_function=preprocess_input3)
+
+test_ds = test_gen.flow_from_dataframe(test_df, x_col='file_name', y_col='label',
+                                         target_size=(299, 299), class_mode='sparse',
+                                         batch_size=batch_size, shuffle=False )
+test_ds2 = test_gen2.flow_from_dataframe(test_df, x_col='file_name', y_col='label',
+                                         target_size=(224, 224), class_mode='sparse',
+                                         batch_size=batch_size, shuffle=False )
+test_ds3 = test_gen3.flow_from_dataframe(test_df, x_col='file_name', y_col='label',
+                                         target_size=(224, 224), class_mode='sparse',
+                                         batch_size=batch_size, shuffle=False )
 
 # test_tensor = test_gen.flow_from_dataframe(test_imgs, x_col='images',
 #                                          target_size=img_size, class_mode=None,
@@ -126,45 +158,91 @@ test_gen = ImageDataGenerator(rescale=1.0 / 255, preprocessing_function=preproce
 
 # Add the pretrained layers
 pretrained_model = keras.applications.Xception(include_top=False, weights='imagenet',input_shape=(299, 299, 3))
-
-# Add GlobalAveragePooling2D layer
 average_pooling = keras.layers.GlobalAveragePooling2D()(pretrained_model.output)
-
-# Add the output layer
 output = keras.layers.Dense(n_classes, activation='sigmoid')(average_pooling) #initially: softmax
-
-# Get the model
 model = keras.Model(inputs=pretrained_model.input, outputs=output)
 
-print(model.summary())
+# Add the pretrained layers
+pretrained_model2 = keras.applications.ResNet50(include_top=False, weights='imagenet',input_shape=(224, 224, 3))
+average_pooling2 = keras.layers.GlobalAveragePooling2D()(pretrained_model2.output)
+output2 = keras.layers.Dense(n_classes, activation='sigmoid')(average_pooling2)
+model2 = keras.Model(inputs=pretrained_model2.input, outputs=output2)
 
+# Add the pretrained layers
+pretrained_model3 = keras.applications.VGG16(include_top=False, weights='imagenet',input_shape=(224, 224, 3))
+average_pooling3 = keras.layers.GlobalAveragePooling2D()(pretrained_model3.output)
+output3 = keras.layers.Dense(n_classes, activation='sigmoid')(average_pooling3)
+model3 = keras.Model(inputs=pretrained_model3.input, outputs=output3)
 
 
 
 #====================================Testing================================================
 
-# Compile the model
+# Compile the models
 model.compile(optimizer=keras.optimizers.Adam(learning_rate=1e-5),
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+model2.compile(optimizer=keras.optimizers.Adam(learning_rate=1e-5),
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+model3.compile(optimizer=keras.optimizers.Adam(learning_rate=1e-5),
               loss='sparse_categorical_crossentropy',
               metrics=['accuracy'])
 
 # labels
 class_dict={'with_mask': 0, 'without_mask': 1}
 
-# Load the saved model
+# Load the saved models
 model.load_weights(filepath=main_path + os.path.sep +'model_xception_facemask.h5')
+model2.load_weights(filepath=main_path + os.path.sep +'model_resnet_facemask.h5')
+model3.load_weights(filepath=main_path + os.path.sep +'model_vgg16_facemask.h5')
 
-# check_test.pred= check_test.pred.map(lambda x:get_key(x,class_dict) )
+loss1, accuracy1= model.evaluate(test_ds)
+loss2, accuracy2= model2.evaluate(test_ds2)
+loss3, accuracy3= model3.evaluate(test_ds3)
+# Comparing Models
+lab= ['Xception','ResNet50', 'VGG16']
+losses=[loss1, loss2, loss3]
+acc= [accuracy1,accuracy2,accuracy3]
+x = np.arange(len(lab))  # the label locations
+width = 0.35  # the width of the bars
+fig, ax = plt.subplots()
+rects1 = ax.bar(x - width/2, losses, width, label='Loss')
+rects2 = ax.bar(x + width/2, acc, width, label='Accuracy')
+# Add some text for labels, title and custom x-axis tick labels, etc.
+ax.set_ylabel('Value')
+ax.set_title('Comparing Models')
+ax.set_xticks(x, lab)
+ax.legend(loc='lower right')
+ax.bar_label(rects1, padding=3)
+ax.bar_label(rects2, padding=3)
+fig.tight_layout()
+plt.show()
+
+# Ensemble Models
+pred1= model.predict(test_ds)
+pred2= model2.predict(test_ds2)
+pred3= model3.predict(test_ds3)
+predictions1,predictions2,predictions3=[],[],[]
+for i in range(len(pred1)):
+    predictions1.append(np.argmax(pred1[i]))
+    predictions2.append(np.argmax(pred2[i]))
+    predictions3.append(np.argmax(pred3[i]))
+rez= pd.DataFrame()
+rez['res1']= np.array(predictions1)
+rez['res2']= np.array(predictions2)
+rez['res3']= np.array(predictions3)
+rez_final= rez.mode(axis=1).values
+check_df= pd.DataFrame(data=test_df.label.copy()).reset_index()
+check_df['ensemble']= rez_final
+check_df['ensemble']=check_df['ensemble'].map(lambda x:get_key(x, class_dict))
+
+from sklearn.metrics import accuracy_score
+ens_acc= accuracy_score(check_df.label,check_df.ensemble)
 
 
 
 # My Test
-new_path= main_path + '/test/'
-imgs=os.listdir(new_path)
-dat=[]
-for i in range(len(imgs)):
-    dat.append(new_path+imgs[i])
-test_imgs= pd.DataFrame(data=dat, columns=['images'])
 
 def imgs_to_df(path, images_list):
     dat = []
@@ -196,9 +274,9 @@ def facemask(image_df,column_name, image_generator,model,get_key, class_dict, ba
 
     return pred_df.label
 
+new_path= main_path + '/test/'
+imgs=os.listdir(new_path)
+test_imgs= imgs_to_df(path=new_path,images_list=imgs)
 new_predictions = facemask(test_imgs,'images',test_gen,model,get_key,class_dict)
 
-#==Test 2
-path2=os.getcwd()+os.path.sep+'test2/'
-images_test= imgs_to_df(path=path2,images_list=os.listdir(path2))
-new_predictions2 = facemask(images_test,'images',test_gen,model,get_key,class_dict)
+# Photo Credit: Unsplash.com
