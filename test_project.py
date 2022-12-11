@@ -78,12 +78,75 @@ def getCalssName(classNo):
 #%%
 model = models.load_model("model.h5")
 #%%
-cur_Img = cv2.imread("/home/ubuntu/project/archive/Photo2.jpg")
-cur_Img = cv2.cvtColor(cur_Img, cv2.COLOR_RGB2BGR)
-plt.imshow(cur_Img)
-plt.show()
-cur_Img = np.array(cur_Img)
+cur_Img1 = cv2.imread("/home/ubuntu/project/archive/withmask2.jpg")
+cur_Img1 = cv2.cvtColor(cur_Img1, cv2.COLOR_RGB2BGR)
+
+cur_Img = np.array(cur_Img1)
 cur_Img = cv2.resize(np.float32(cur_Img), (IMG_SIZE, IMG_SIZE))
 cur_Img = cur_Img.reshape(-1, IMG_SIZE, IMG_SIZE, 3)
+
 predictions = model.predict(cur_Img)
-print(getCalssName(predictions.argmax(axis=1)))
+plt.imshow(cur_Img1)
+plt.title(f"prediction:{getCalssName(predictions.argmax(axis=1))}")
+plt.show()
+#%%
+cur_Img1 = cv2.imread("/home/ubuntu/project/archive/withmask1 (1).jpg")
+cur_Img1 = cv2.cvtColor(cur_Img1, cv2.COLOR_RGB2BGR)
+
+cur_Img = np.array(cur_Img1)
+cur_Img = cv2.resize(np.float32(cur_Img), (IMG_SIZE, IMG_SIZE))
+cur_Img = cur_Img.reshape(-1, IMG_SIZE, IMG_SIZE, 3)
+
+predictions = model.predict(cur_Img)
+plt.imshow(cur_Img1)
+plt.title(f"prediction:{getCalssName(predictions.argmax(axis=1))}")
+plt.show()
+#%%
+cur_Img1 = cv2.imread("/home/ubuntu/project/archive/withoutmask1.jpg")
+cur_Img1 = cv2.cvtColor(cur_Img1, cv2.COLOR_RGB2BGR)
+
+cur_Img = np.array(cur_Img1)
+cur_Img = cv2.resize(np.float32(cur_Img), (IMG_SIZE, IMG_SIZE))
+cur_Img = cur_Img.reshape(-1, IMG_SIZE, IMG_SIZE, 3)
+
+predictions = model.predict(cur_Img)
+plt.imshow(cur_Img1)
+plt.title(f"prediction:{getCalssName(predictions.argmax(axis=1))}")
+plt.show()
+#%%
+cur_Img1 = cv2.imread("/home/ubuntu/project/archive/withoutmask2.jpg")
+cur_Img1 = cv2.cvtColor(cur_Img1, cv2.COLOR_RGB2BGR)
+
+cur_Img = np.array(cur_Img1)
+cur_Img = cv2.resize(np.float32(cur_Img), (IMG_SIZE, IMG_SIZE))
+cur_Img = cur_Img.reshape(-1, IMG_SIZE, IMG_SIZE, 3)
+
+predictions = model.predict(cur_Img)
+plt.imshow(cur_Img1)
+plt.title(f"prediction:{getCalssName(predictions.argmax(axis=1))}")
+plt.show()
+#%%
+cur_Img1 = cv2.imread("/home/ubuntu/project/archive/withmask1.jpg")
+cur_Img1 = cv2.cvtColor(cur_Img1, cv2.COLOR_RGB2BGR)
+
+cur_Img = np.array(cur_Img1)
+cur_Img = cv2.resize(np.float32(cur_Img), (IMG_SIZE, IMG_SIZE))
+cur_Img = cur_Img.reshape(-1, IMG_SIZE, IMG_SIZE, 3)
+
+predictions = model.predict(cur_Img)
+plt.imshow(cur_Img1)
+plt.title(f"prediction:{getCalssName(predictions.argmax(axis=1))}")
+plt.show()
+#%%
+cur_Img1 = cv2.imread("/home/ubuntu/project/archive/nomask2.jpg")
+cur_Img1 = cv2.cvtColor(cur_Img1, cv2.COLOR_RGB2BGR)
+
+cur_Img = np.array(cur_Img1)
+cur_Img = cv2.resize(np.float32(cur_Img), (IMG_SIZE, IMG_SIZE))
+cur_Img = cur_Img.reshape(-1, IMG_SIZE, IMG_SIZE, 3)
+
+predictions = model.predict(cur_Img)
+plt.imshow(cur_Img1)
+plt.title(f"prediction:{getCalssName(predictions.argmax(axis=1))}")
+plt.show()
+
