@@ -8,6 +8,9 @@ The Group-Proposal file was moved 12/12/2022 to Group-Proposal Folder but create
 The pre_trained.py has the codes for training the dataset with Xception, ResNet50 and VGG16.
 The input images and annotations path should have the correct path for data.
 
+#### xception.py
+This includes only the xception model as the best model from the pre-trained models in this project.
+
 #### Testing
 The test script test the pre-trained model.
 
