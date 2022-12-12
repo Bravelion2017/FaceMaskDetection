@@ -1,7 +1,7 @@
 # FACE MASK DETECTION
 
 #### Group-Proposal
-The Group-Proposal file was moved 12/12/2022 to Group-Proposal Folder but created 27 days ago from today.
+The Group-Proposal file was moved 12/12/2022 to Group-Proposal Folder but created 27 days ago from 12/12/2022.
 
 #### Dataset
 Link: https://www.kaggle.com/datasets/andrewmvd/face-mask-detection 
