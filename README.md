@@ -11,6 +11,8 @@ Link: https://www.kaggle.com/datasets/andrewmvd/face-mask-detection
 The pre_trained.py has the codes for training the dataset with Xception, ResNet50 and VGG16.
 The input images and annotations path should have the correct path for data.
 
+PS:You may decide to run each section of the pre-trained model to accomodate your computational power. Or run the xception.py only which includes just one model.
+
 #### xception.py
 This includes only the xception model as the best model from the pre-trained models in this project. It trains and test using xception.
 
