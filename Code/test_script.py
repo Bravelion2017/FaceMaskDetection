@@ -239,7 +239,7 @@ check_df['ensemble']=check_df['ensemble'].map(lambda x:get_key(x, class_dict))
 
 from sklearn.metrics import accuracy_score
 ens_acc= accuracy_score(check_df.label,check_df.ensemble)
-
+print(f"Ensemble Accuracy: {ens_acc}")
 
 
 # My Test
@@ -274,9 +274,23 @@ def facemask(image_df,column_name, image_generator,model,get_key, class_dict, ba
 
     return pred_df.label
 
+model= keras.models.load_model('model_xception_facemask.h5') #You can use other pre-trained but set img_size = (size, size)
+
 new_path= main_path + '/test/'
 imgs=os.listdir(new_path)
 test_imgs= imgs_to_df(path=new_path,images_list=imgs)
 new_predictions = facemask(test_imgs,'images',test_gen,model,get_key,class_dict)
+#Try Plots
+labz= imgs
+idx=1
+for i in range(4):
+    plt.subplot(2, 2, idx)
+    pic = cv2.imread(test_imgs.images.values[i])
+    plt.imshow(pic)
+    plt.title(f"Label:{labz[i]}|Pred:{new_predictions[i]} ",fontdict={'size':10})
+    idx +=1
+
+plt.tight_layout()
+plt.show()
 
 # Photo Credit: Unsplash.com
